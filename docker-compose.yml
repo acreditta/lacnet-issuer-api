@@ -1,0 +1,17 @@
+version: "0.1.0"
+
+services:
+  app:
+    build: .
+    restart: on-failure
+    ports:
+      - "3000:3000"
+  nginx:
+    build: ./nginx
+    restart: on-failure
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
