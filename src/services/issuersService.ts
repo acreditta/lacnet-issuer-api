@@ -1,6 +1,6 @@
 import boom from "@hapi/boom";
 // import { DID, DIDRecoverable, Resolver } from '@lacchain/did'
-import * as lacnetIssuer from "../libs/database/models/issuer";
+import * as issuerModel from "../libs/database/models/issuer";
 import { encrypt, decrypt } from "../config";
 
 class IssuersService {
@@ -31,23 +31,23 @@ class IssuersService {
     issuer.privateKey = "For security reasons, the private key is not returned";
   }
 
-  async create(user: any) {
+  async create(issuer: any) {
     const did = await this.createDID(); 
     const newIssuer = { 
       did: did.id,
-      id: user.id,
-      name: user.name,
+      id: issuer.id,
+      name: issuer.name,
       privateKey: encrypt(did.privateKey),
     };
-    await lacnetIssuer.put(newIssuer);
+    await issuerModel.put(newIssuer);
     this.cleanIssuerData(newIssuer);
     return newIssuer;
   }
 
   async find(id? : number) {
     const issuers: Array<any> | undefined = id ?
-      (await lacnetIssuer.get(id)).Items :
-      (await lacnetIssuer.get()).Items;
+      (await issuerModel.get(id)).Items :
+      (await issuerModel.get()).Items;
     if (!issuers) throw boom.notFound("Not found");
     issuers.forEach((issuer: any) => {
       // console.log(issuer.privateKey)
@@ -58,24 +58,24 @@ class IssuersService {
   }
 
   async findOne(id: number, did: string) {
-    const issuer = (await lacnetIssuer.getOne(id, did)).Item;
+    const issuer = (await issuerModel.getOne(id, did)).Item;
     if (!issuer) throw boom.notFound("Not found");
     this.cleanIssuerData(issuer);
     return issuer;
   }
 
   async update(id:number, did: string, changes: any) {
-    const current = (await lacnetIssuer.getOne(id, did)).Item;
+    const current = (await issuerModel.getOne(id, did)).Item;
     if (!current) throw boom.notFound("Not found");
     const updated = { ...current, ...changes };
     console.log(updated)
-    await lacnetIssuer.put(updated);
+    await issuerModel.put(updated);
     this.cleanIssuerData(updated);
     return updated;
   }
 
   async delete(id: number, did: string) {
-    return lacnetIssuer.destroy(id, did);
+    return issuerModel.destroy(id, did);
   }
 }
 
