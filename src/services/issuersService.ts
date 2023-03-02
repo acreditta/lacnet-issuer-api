@@ -4,8 +4,6 @@ import * as issuerModel from "../libs/database/models/issuer";
 import { encrypt, decrypt } from "../config";
 
 class IssuersService {
-  constructor() {}
-
   async createDID() {
     // TODO: create DID
 
@@ -21,10 +19,6 @@ class IssuersService {
       privateKey: "HELLO WORLD"
     };
     return did
-  }
-
-  encryptPrivateKey(privateKey: string) {
-
   }
 
   cleanIssuerData(issuer: any) {
