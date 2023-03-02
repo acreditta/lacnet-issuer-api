@@ -1,5 +1,4 @@
 import express, { Express, Request, Response } from 'express';
-import dotenv from 'dotenv';
 import routerApi from './routes';
 import { errorHandler, boomErrorHandler } from './middlewares/errorHandler';
 import helmet from 'helmet';

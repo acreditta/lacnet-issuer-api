@@ -6,7 +6,8 @@
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/index.js",
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\""
+    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/index.js\"",
+    "migrate": "node dist/libs/database/migrate.js"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,8 @@
   },
   "homepage": "https://github.com/acreditta/lacnet-issuer-api#readme",
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.281.0",
+    "@aws-sdk/lib-dynamodb": "^3.282.0",
     "@hapi/boom": "^10.0.1",
     "@lacchain/did": "^1.4.6",
     "cors": "^2.8.5",
