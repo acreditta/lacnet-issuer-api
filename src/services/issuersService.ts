@@ -31,6 +31,7 @@ class IssuersService {
       did: did.id,
       id: issuer.id,
       name: issuer.name,
+      webhooks: issuer.webhooks,
       privateKey: encrypt(did.privateKey),
     };
     await issuerModel.put(newIssuer);
