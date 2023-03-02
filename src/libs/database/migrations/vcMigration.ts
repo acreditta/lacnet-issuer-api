@@ -2,7 +2,7 @@ import { dynamoDocClient, checkTableExists } from '../client';
 import { CreateTableCommand, CreateTableInput } from "@aws-sdk/client-dynamodb";
 import config from "../../../config";
 
-export const tableName = config.tablesPrefix + 'issuers';
+export const tableName = config.tablesPrefix + 'vc';
 export const createTable = async () => {
   if (await checkTableExists(tableName)) {
     console.log(`Table ${tableName} already exists`)
@@ -11,12 +11,12 @@ export const createTable = async () => {
   const usersTableParams: CreateTableInput = {
     TableName: tableName,
     KeySchema: [
-      { AttributeName: 'id', KeyType: 'HASH' },
-      { AttributeName: 'did', KeyType: 'RANGE' },
+      { AttributeName: 'issuerDid', KeyType: 'HASH' },
+      { AttributeName: 'hash', KeyType: 'RANGE' },
     ],
     AttributeDefinitions: [
-      { AttributeName: 'id', AttributeType: 'N' },
-      { AttributeName: 'did', AttributeType: 'S' },
+      { AttributeName: 'issuerDid', AttributeType: 'S' },
+      { AttributeName: 'hash', AttributeType: 'S' },
     ],
     ProvisionedThroughput: {
       ReadCapacityUnits: 5,

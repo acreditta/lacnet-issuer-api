@@ -1,3 +1,5 @@
 import * as issuerMigration from './migrations/issuerMigration';
+import * as vcMigration from './migrations/vcMigration';
 
-issuerMigration.createTable();  
+issuerMigration.createTable();
+vcMigration.createTable();
