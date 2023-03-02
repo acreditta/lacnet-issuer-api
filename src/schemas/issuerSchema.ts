@@ -5,22 +5,22 @@ const did = Joi.string();
 const privateKey = Joi.string();
 const id = Joi.number().integer().min(1);
 
-const createUserSchema = Joi.object({
+const createIssuerSchema = Joi.object({
     id: id.required(),
     name: name.required(),
 });
 
-const updateUserSchema = Joi.object({
+const updateIssuerSchema = Joi.object({
     name: name,
 });
 
-const getUserSchema = Joi.object({
+const getIssuerSchema = Joi.object({
     id: id.required(),
     did: did.required()
 });
 
-const indexUserSchema = Joi.object({
+const indexIssuerSchema = Joi.object({
     id: id
 });
 
-export { createUserSchema, updateUserSchema, getUserSchema, indexUserSchema };
+export { createIssuerSchema, updateIssuerSchema, getIssuerSchema, indexIssuerSchema };

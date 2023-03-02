@@ -1,13 +1,13 @@
 import express, { Express, NextFunction, Request, Response } from 'express';
 import IssuersService from '../services/issuersService';
 import { validatorHandler } from '../middlewares/validatorHandler';
-import { createUserSchema, updateUserSchema, getUserSchema, indexUserSchema } from '../schemas/userSchema';
+import { createIssuerSchema, updateIssuerSchema, getIssuerSchema, indexIssuerSchema } from '../schemas/issuerSchema';
 
 const router = express.Router();
 const issuersService = new IssuersService();
 
 router.get('/',
-    validatorHandler(indexUserSchema, 'query'), 
+    validatorHandler(indexIssuerSchema, 'query'), 
     async (req: Request, res: Response, next: NextFunction) => {
     try{
         const { id } = req.query;
@@ -22,7 +22,7 @@ router.get('/',
 });
 
 router.get('/:id/:did', 
-    validatorHandler(getUserSchema, 'params'),
+    validatorHandler(getIssuerSchema, 'params'),
     async (req: Request, res: Response, next: NextFunction) => {
         try{
             const { id, did } = req.params;
@@ -34,18 +34,18 @@ router.get('/:id/:did',
 );
 
 router.post('/', 
-    validatorHandler(createUserSchema, 'body'),
+    validatorHandler(createIssuerSchema, 'body'),
     async (req: Request, res: Response, next: NextFunction) => {
         try{
             const { name, email, id } = req.body;
-            const newUser = await issuersService.create({
+            const newIssuer = await issuersService.create({
                 name: name,
                 email: email,
                 id: id
             });
             res.status(201).json({
                 message: 'Created',
-                data: newUser
+                data: newIssuer
             });
         } catch (err) {
             next(err);
@@ -54,18 +54,18 @@ router.post('/',
 );
 
 router.put('/:id/:did', 
-    validatorHandler(getUserSchema, 'params'),
-    validatorHandler(updateUserSchema, 'body'),
+    validatorHandler(getIssuerSchema, 'params'),
+    validatorHandler(updateIssuerSchema, 'body'),
     async (req: Request, res: Response, next: NextFunction) => {
         try{
             const { id, did } = req.params;
             const { name } = req.body;
-            const updatedUser = await issuersService.update(parseInt(id), did, {
+            const updatedIssuer = await issuersService.update(parseInt(id), did, {
                 name: name
             });
             res.json({
                 message: 'Updated',
-                data: updatedUser
+                data: updatedIssuer
             });
         } catch (err) {
             next(err);
@@ -74,11 +74,11 @@ router.put('/:id/:did',
 );
 
 router.delete('/:id/:did', 
-    validatorHandler(getUserSchema, 'params'),
+    validatorHandler(getIssuerSchema, 'params'),
     async (req: Request, res: Response, next: NextFunction) => {
         try{
             const { id, did } = req.params;
-            const deletedUser = await issuersService.delete(parseInt(id), did);
+            const deletedIssuer = await issuersService.delete(parseInt(id), did);
             res.json({
                 message: 'Deleted'
             }); 
