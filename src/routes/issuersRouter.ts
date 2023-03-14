@@ -37,12 +37,7 @@ router.post('/',
     validatorHandler(createIssuerSchema, 'body'),
     async (req: Request, res: Response, next: NextFunction) => {
         try{
-            const { id, name, webhooks } = req.body;
-            const newIssuer = await issuersService.create({
-                name: name,
-                webhooks: webhooks,
-                id: id
-            });
+            const newIssuer = await issuersService.create(req.body);
             res.status(201).json({
                 message: 'Created',
                 data: newIssuer
@@ -59,11 +54,7 @@ router.put('/:id/:did',
     async (req: Request, res: Response, next: NextFunction) => {
         try{
             const { id, did } = req.params;
-            const { name, webhooks } = req.body;
-            const updatedIssuer = await issuersService.update(parseInt(id), did, {
-                name: name,
-                webhooks: webhooks
-            });
+            const updatedIssuer = await issuersService.update(parseInt(id), did, req.body);
             res.json({
                 message: 'Updated',
                 data: updatedIssuer
