@@ -1,8 +1,8 @@
-import issuersRouter from "./issuersRouter";
-import vcRouter from "./vcRouter";
+import issuersRouter from "./issuersRouter.js";
+import vcRouter from "./vcRouter.js";
 import express from "express";
 
-const routerApi = (app: express.Application) => {
+const routerApi = (app) => {
     const router = express.Router();
     app.use('/api/v1', router);
     router.use('/issuers', issuersRouter);

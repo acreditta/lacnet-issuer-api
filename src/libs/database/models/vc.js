@@ -1,18 +1,14 @@
-import { dynamoDocClient } from '../client';
+import { dynamoDocClient } from '../client.js';
 import { 
-  PutCommand, 
-  PutCommandInput, 
-  ScanCommand, 
-  ScanCommandInput, 
-  GetCommand, 
-  GetCommandInput,
-  DeleteCommand,
-  DeleteCommandInput
+  PutCommand,
+  ScanCommand,
+  GetCommand,
+  DeleteCommand
 } from "@aws-sdk/lib-dynamodb";
-import { tableName } from "./../migrations/vcMigration";
+import { tableName } from "../migrations/vcMigration.js";
 
-export const put = (credential: any) => {
-  const putParams: PutCommandInput = {
+export const put = (credential) => {
+  const putParams = {
     TableName: tableName,
     Item: {
       ...credential,
@@ -20,13 +16,13 @@ export const put = (credential: any) => {
     },
   };
   
-  const command: PutCommand = new PutCommand(putParams);
+  const command = new PutCommand(putParams);
   
   return dynamoDocClient.send(command);
 }
 
-export const get = async (issuerDid?: string) => {
-  const getParams: ScanCommandInput = {
+export const get = async (issuerDid = null) => {
+  const getParams = {
       TableName: tableName,
   };
   if (issuerDid) {
@@ -39,8 +35,8 @@ export const get = async (issuerDid?: string) => {
   return await dynamoDocClient.send(command);
 }
 
-export const getOne = async (issuerDid:string, hash: string) => {
-  const getParams: GetCommandInput = {
+export const getOne = async (issuerDid, hash) => {
+  const getParams = {
       TableName: tableName,
       Key: {
         issuerDid: issuerDid,

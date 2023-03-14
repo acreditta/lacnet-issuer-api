@@ -1,10 +1,10 @@
 import boom from "@hapi/boom";
 // import { DID, DIDRecoverable, Resolver } from '@lacchain/did'
-import * as issuerModel from "../libs/database/models/issuer";
-import { encrypt, decrypt } from "../config";
+import * as issuerModel from "../libs/database/models/issuer.js";
+import { encrypt, decrypt } from "../config/index.js";
 
 class IssuersService {
-  async createDID(blockchain: string) {
+  async createDID(blockchain) {
     switch (blockchain) {
       case "lacchain":
         // TODO: create DID
@@ -27,12 +27,12 @@ class IssuersService {
     }
   }
 
-  cleanIssuerData(issuer: any) {
+  cleanIssuerData(issuer) {
     issuer.privateKey = "For security reasons, the private key is not returned";
   }
 
-  async create(issuer: any) {
-    let did: { id: string, privateKey: string } = { id: "", privateKey: ""}; 
+  async create(issuer) {
+    let did = { id: "", privateKey: ""}; 
     if((!issuer.did && !!issuer.privateKey) || (!!issuer.did && !issuer.privateKey)) {
       throw boom.badRequest("If you want to use your own DID, you must provide both the DID and the private key, otherwise, leave both fields empty");
     }
@@ -55,12 +55,12 @@ class IssuersService {
     return newIssuer;
   }
 
-  async find(id? : number) {
-    const issuers: Array<any> | undefined = id ?
+  async find(id = null) {
+    const issuers = id ?
       (await issuerModel.get(id)).Items :
       (await issuerModel.get()).Items;
     if (!issuers) throw boom.notFound("Not found");
-    issuers.forEach((issuer: any) => {
+    issuers.forEach((issuer) => {
       // console.log(issuer.privateKey)
       // console.log("decrypted: " + decrypt(issuer.privateKey))
       this.cleanIssuerData(issuer);
@@ -68,20 +68,20 @@ class IssuersService {
     return issuers;
   }
 
-  async findOne(id: number, did: string) {
+  async findOne(id, did) {
     const issuer = (await issuerModel.getOne(id, did)).Item;
     if (!issuer) throw boom.notFound("Not found");
     this.cleanIssuerData(issuer);
     return issuer;
   }
 
-  async update(id:number, did: string, issuer: any) {
+  async update(id, did, issuer) {
     if((!issuer.did && !!issuer.privateKey) || (!!issuer.did && !issuer.privateKey)) {
       throw boom.badRequest("If you want to use your own DID, you must provide both the DID and the private key, otherwise, leave both fields empty");
     }
     const current = (await issuerModel.getOne(id, did)).Item;
     if (!current) throw boom.notFound("Not found");
-    const changes: any = {};
+    const changes = {};
     if (issuer.name) changes.name = issuer.name;
     if (issuer.webhooks) changes.webhooks = issuer.webhooks;
     if (issuer.blockchain) changes.blockchain = issuer.blockchain;
@@ -95,7 +95,7 @@ class IssuersService {
     return updated;
   }
 
-  async delete(id: number, did: string) {
+  async delete(id, did) {
     return issuerModel.destroy(id, did);
   }
 }

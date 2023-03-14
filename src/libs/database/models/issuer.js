@@ -1,18 +1,14 @@
-import { dynamoDocClient } from '../client';
+import { dynamoDocClient } from '../client.js';
 import { 
-  PutCommand, 
-  PutCommandInput, 
-  ScanCommand, 
-  ScanCommandInput, 
-  GetCommand, 
-  GetCommandInput,
-  DeleteCommand,
-  DeleteCommandInput
+  PutCommand,
+  ScanCommand,
+  GetCommand,
+  DeleteCommand
 } from "@aws-sdk/lib-dynamodb";
-import { tableName } from "./../migrations/issuerMigration";
+import { tableName } from "../migrations/issuerMigration.js";
 
-export const put = (user: any) => {
-  const putParams: PutCommandInput = {
+export const put = (user) => {
+  const putParams = {
     TableName: tableName,
     Item: {
       ...user,
@@ -20,13 +16,13 @@ export const put = (user: any) => {
     },
   };
   
-  const command: PutCommand = new PutCommand(putParams);
+  const command = new PutCommand(putParams);
   
   return dynamoDocClient.send(command);
 }
 
-export const get = async (id?: number) => {
-  const getParams: ScanCommandInput = {
+export const get = async (id = null) => {
+  const getParams = {
       TableName: tableName,
   };
   if (id) {
@@ -39,8 +35,8 @@ export const get = async (id?: number) => {
   return await dynamoDocClient.send(command);
 }
 
-export const getOne = async (id:number, did: string) => {
-  const getParams: GetCommandInput = {
+export const getOne = async (id, did) => {
+  const getParams = {
       TableName: tableName,
       Key: {
         did: did,
@@ -51,8 +47,8 @@ export const getOne = async (id:number, did: string) => {
   return await dynamoDocClient.send(command);
 }
 
-export const destroy = async (id:number, did: string) => {
-  const deleteParams: DeleteCommandInput = {
+export const destroy = async (id, did) => {
+  const deleteParams = {
       TableName: tableName,
       Key: {
         did: did,

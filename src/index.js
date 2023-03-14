@@ -1,11 +1,11 @@
-import express, { Express, Request, Response } from 'express';
-import routerApi from './routes';
-import { errorHandler, boomErrorHandler } from './middlewares/errorHandler';
+import express from 'express';
+import routerApi from './routes/index.js';
+import { errorHandler, boomErrorHandler } from './middlewares/errorHandler.js';
 import helmet from 'helmet';
 import cors from 'cors';
-import config from './config';
+import config from './config/index.js';
 
-const app: Express = express();
+const app = express();
 const port = config.port;
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(', ') || [];
 
@@ -15,7 +15,7 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (req, res) => {
   res.send('Api is running :)');
 });
 

@@ -1,18 +1,18 @@
-import express, { Express, NextFunction, Request, Response } from 'express';
-import IssuersService from '../services/issuersService';
-import { validatorHandler } from '../middlewares/validatorHandler';
-import { createIssuerSchema, updateIssuerSchema, getIssuerSchema, indexIssuerSchema } from '../schemas/issuerSchema';
+import express from 'express';
+import IssuersService from '../services/issuersService.js';
+import { validatorHandler } from '../middlewares/validatorHandler.js';
+import { createIssuerSchema, updateIssuerSchema, getIssuerSchema, indexIssuerSchema } from '../schemas/issuerSchema.js';
 
 const router = express.Router();
 const issuersService = new IssuersService();
 
 router.get('/',
     validatorHandler(indexIssuerSchema, 'query'), 
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req, res, next) => {
     try{
         const { id } = req.query;
         if (id) {
-            res.status(200).json(await issuersService.find(parseInt(id as string)));
+            res.status(200).json(await issuersService.find(parseInt(id)));
         } else {
             res.status(200).json(await issuersService.find());
         }
@@ -23,7 +23,7 @@ router.get('/',
 
 router.get('/:id/:did', 
     validatorHandler(getIssuerSchema, 'params'),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req, res, next) => {
         try{
             const { id, did } = req.params;
             res.status(200).json(await issuersService.findOne(parseInt(id), did));
@@ -35,7 +35,7 @@ router.get('/:id/:did',
 
 router.post('/', 
     validatorHandler(createIssuerSchema, 'body'),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req, res, next) => {
         try{
             const newIssuer = await issuersService.create(req.body);
             res.status(201).json({
@@ -51,7 +51,7 @@ router.post('/',
 router.put('/:id/:did', 
     validatorHandler(getIssuerSchema, 'params'),
     validatorHandler(updateIssuerSchema, 'body'),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req, res, next) => {
         try{
             const { id, did } = req.params;
             const updatedIssuer = await issuersService.update(parseInt(id), did, req.body);
@@ -67,7 +67,7 @@ router.put('/:id/:did',
 
 router.delete('/:id/:did', 
     validatorHandler(getIssuerSchema, 'params'),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req, res, next) => {
         try{
             const { id, did } = req.params;
             const deletedIssuer = await issuersService.delete(parseInt(id), did);

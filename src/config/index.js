@@ -22,7 +22,7 @@ const salt = process.env.CRYPTO_SALT || 'salt'
 const iv = Buffer.alloc(16, 0)
 const key = crypto.scryptSync(password, salt, 24)
 
-export const encrypt = (text: string) => {
+export const encrypt = (text) => {
     const cipher = crypto.createCipheriv(algorithm, key, iv)
     const randomSuffix = crypto.randomBytes(16).toString('hex')
     const textWithRandomSuffix = `${text}${randomSuffix}`
@@ -31,7 +31,7 @@ export const encrypt = (text: string) => {
     return encrypted
 }
 
-export const decrypt = (text: string) => {
+export const decrypt = (text) => {
     const decipher = crypto.createDecipheriv(algorithm, key, iv)
     let decrypted = decipher.update(text, 'hex', 'utf8')
     decrypted += decipher.final('utf8')

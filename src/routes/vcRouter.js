@@ -1,18 +1,18 @@
-import express, { Express, NextFunction, Request, Response } from 'express';
-import VcService from '../services/vcService';
-import { validatorHandler } from '../middlewares/validatorHandler';
-import { createVcSchema, getVcSchema, indexVcSchema, revokeVcSchema } from '../schemas/vcSchema';
+import express from 'express';
+import VcService from '../services/vcService.js';
+import { validatorHandler } from '../middlewares/validatorHandler.js';
+import { createVcSchema, getVcSchema, indexVcSchema, revokeVcSchema } from '../schemas/vcSchema.js';
 
 const router = express.Router();
 const vcService = new VcService();
 
 router.get('/',
     validatorHandler(indexVcSchema, 'query'), 
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req, res, next) => {
     try{
         const { issuerDid } = req.query;
         if (issuerDid) {
-            res.status(200).json(await vcService.find(issuerDid as string));
+            res.status(200).json(await vcService.find(issuerDid));
         } else {
             res.status(200).json(await vcService.find());
         }
@@ -23,7 +23,7 @@ router.get('/',
 
 router.get('/:issuerDid/:hash', 
     validatorHandler(getVcSchema, 'params'),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req, res, next) => {
         try{
             const { issuerDid, hash } = req.params;
             res.status(200).json(await vcService.findOne(issuerDid, hash));
@@ -35,7 +35,7 @@ router.get('/:issuerDid/:hash',
 
 router.post('/', 
     validatorHandler(createVcSchema, 'body'),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req, res, next) => {
         try{
             const { issuerId, issuerDid, credential } = req.body;
             const newUser = await vcService.create(issuerId, issuerDid, credential);
@@ -52,7 +52,7 @@ router.post('/',
 router.put('/:issuerDid/:hash', 
     validatorHandler(getVcSchema, 'params'),
     validatorHandler(revokeVcSchema, 'body'),
-    async (req: Request, res: Response, next: NextFunction) => {
+    async (req, res, next) => {
         try{
             const { issuerDid, hash } = req.params;
             const { revocationReason } = req.body;

@@ -1,6 +1,6 @@
-import { dynamoDocClient, checkTableExists } from '../client';
-import { CreateTableCommand, CreateTableInput } from "@aws-sdk/client-dynamodb";
-import config from "../../../config";
+import { dynamoDocClient, checkTableExists } from '../client.js';
+import { CreateTableCommand } from "@aws-sdk/client-dynamodb";
+import config from "../../../config/index.js";
 
 export const tableName = config.tablesPrefix + 'issuers';
 export const createTable = async () => {
@@ -8,7 +8,7 @@ export const createTable = async () => {
     console.log(`Table ${tableName} already exists`)
     return;
   }
-  const usersTableParams: CreateTableInput = {
+  const usersTableParams = {
     TableName: tableName,
     KeySchema: [
       { AttributeName: 'id', KeyType: 'HASH' },
