@@ -14,6 +14,9 @@ const config = {
     dbPort : process.env.DB_PORT || 3306,
     awsRegion : process.env.AWS_REGION || 'us-east-1',
     tablesPrefix : process.env.TABLES_PREFIX || '',
+    nodeAddress : process.env.NODE_ADDRESS || '',
+    registryAddress : process.env.REGISTRY_ADDRESS || '',
+    rpcUrl : process.env.RPC_URL || '',
 }
 
 const algorithm = process.env.CRYPTO_ALGORITHM || 'aes-192-cbc'

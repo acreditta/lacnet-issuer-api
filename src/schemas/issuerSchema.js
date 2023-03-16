@@ -3,6 +3,7 @@ import Joi from 'joi';
 const name = Joi.string().min(3).max(30);
 const did = Joi.string();
 const privateKey = Joi.string();
+const publicKey = Joi.string();
 const id = Joi.number().integer().min(1);
 const webhooks = Joi.array().items(Joi.string().uri());
 export const blockchainOptions = ['lacchain']
@@ -14,6 +15,7 @@ export const createIssuerSchema = Joi.object({
     webhooks: webhooks,
     blockchain: blockchain.required(),
     did: did,
+    publicKey: publicKey,
     privateKey: privateKey
 });
 
@@ -22,6 +24,7 @@ export const updateIssuerSchema = Joi.object({
     webhooks: webhooks,
     blockchain: blockchain,
     did: did,
+    publicKey: publicKey,
     privateKey: privateKey
 });
 

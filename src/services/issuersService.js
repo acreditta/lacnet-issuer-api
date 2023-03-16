@@ -1,26 +1,21 @@
 import boom from "@hapi/boom";
-// import { DID, DIDRecoverable, Resolver } from '@lacchain/did'
+import { DID, DIDRecoverable, Resolver } from '@lacchain/did'
 import * as issuerModel from "../libs/database/models/issuer.js";
-import { encrypt, decrypt } from "../config/index.js";
+import { encrypt } from "../config/index.js";
+import config from "../config/index.js";
 
 class IssuersService {
   async createDID(blockchain) {
     switch (blockchain) {
       case "lacchain":
-        // TODO: create DID
-    
-        // const did = new DID( {
-        //   registry: '0xbDa1238272FDA6888556449Cb77A87Fc8205E8ba',
-        //   rpcUrl: 'https://writer.lacchain.net',
-        //   network: 'main'
-        // } );
-        // const t = await did.createDID();
-        
-        const timestamp = new Date().getTime();
-        const did = {
-          id: "TODO:" + timestamp.toLocaleString(), 
-          privateKey: "HELLO WORLD"
-        };
+        const did = new DID( {
+          registry: config.registryAddress,
+          rpcUrl: config.rpcUrl,
+          nodeAddress: config.nodeAddress,
+          network: 'testnet',
+
+        } );
+        const controller = await did.getController();
         return did;
       default:
         throw boom.badRequest("Blockchain not supported");
@@ -28,28 +23,42 @@ class IssuersService {
   }
 
   cleanIssuerData(issuer) {
-    issuer.privateKey = "For security reasons, the private key is not returned";
+    issuer.controller.privateKey = "For security reasons, the private key is not returned";
+    if (issuer.didJsonCrypted) {
+      issuer.didJsonCrypted = "For security reasons, the DID JSON is not returned";
+    }
+    if (issuer.didDocumentCrypted) {
+      issuer.didDocumentCrypted = "For security reasons, the DID Document is not returned";
+    }
   }
 
   async create(issuer) {
-    let did = { id: "", privateKey: ""}; 
-    if((!issuer.did && !!issuer.privateKey) || (!!issuer.did && !issuer.privateKey)) {
-      throw boom.badRequest("If you want to use your own DID, you must provide both the DID and the private key, otherwise, leave both fields empty");
-    }
-    if(!issuer.did && !issuer.privateKey) {
-      did = await this.createDID(issuer.blockchain);
-    } else {
-      did.id = issuer.did;
-      did.privateKey = issuer.privateKey;
+    let did = { id: "", privateKey: ""};
+    const canCustomDid = !!issuer.privateKey && !!issuer.did && !!issuer.publicKey; 
+    if(!canCustomDid && (!!issuer.privateKey || !!issuer.did || !!issuer.publicKey)) {
+      throw boom.badRequest("If you want to use your own DID, you must provide the DID, the public key and the private key, otherwise, leave both fields empty");
     }
     const newIssuer = { 
-      did: did.id,
       id: issuer.id,
       blockchain: issuer.blockchain,
       name: issuer.name,
       webhooks: issuer.webhooks,
-      privateKey: encrypt(did.privateKey),
+      controller: {
+      }
     };
+    if(!canCustomDid) {
+      did = await this.createDID(issuer.blockchain);
+      newIssuer.did = did.id;
+      newIssuer.controller.publicKey = did.address;
+      newIssuer.controller.privateKey = encrypt(did.registry.conf.controllerPrivateKey);
+      newIssuer.didJsonCrypted = encrypt(JSON.stringify(did));
+      console.log(await did.getDocument());
+      newIssuer.didDocumentCrypted = encrypt(JSON.stringify(await did.getDocument()));
+    } else {
+      newIssuer.did = issuer.did;
+      newIssuer.controller.publicKey = issuer.publicKey;
+      newIssuer.controller.privateKey = encrypt(issuer.privateKey);
+    }
     await issuerModel.put(newIssuer);
     this.cleanIssuerData(newIssuer);
     return newIssuer;
@@ -61,8 +70,6 @@ class IssuersService {
       (await issuerModel.get()).Items;
     if (!issuers) throw boom.notFound("Not found");
     issuers.forEach((issuer) => {
-      // console.log(issuer.privateKey)
-      // console.log("decrypted: " + decrypt(issuer.privateKey))
       this.cleanIssuerData(issuer);
     });
     return issuers;
