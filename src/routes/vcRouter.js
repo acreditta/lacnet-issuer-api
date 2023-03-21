@@ -21,12 +21,12 @@ router.get('/',
     }
 });
 
-router.get('/:issuerDid/:hash', 
+router.get('/:issuerId/:issuerDid/:hash', 
     validatorHandler(getVcSchema, 'params'),
     async (req, res, next) => {
         try{
-            const { issuerDid, hash } = req.params;
-            res.status(200).json(await vcService.findOne(issuerDid, hash));
+            const { issuerId, issuerDid, hash } = req.params;
+            res.status(200).json(await vcService.findOne(parseInt(issuerId), issuerDid, hash));
         } catch (err) {
             next(err);
         }
@@ -37,8 +37,8 @@ router.post('/',
     validatorHandler(createVcSchema, 'body'),
     async (req, res, next) => {
         try{
-            const { issuerId, issuerDid, credential } = req.body;
-            const newUser = await vcService.create(issuerId, issuerDid, credential);
+            const { issuerId, issuerDid, credential, distribute } = req.body;
+            const newUser = await vcService.create(issuerId, issuerDid, credential, distribute);
             res.status(201).json({
                 message: 'Created',
                 data: newUser
@@ -49,17 +49,17 @@ router.post('/',
     }
 );
 
-router.put('/:issuerDid/:hash', 
+router.delete('/:issuerId/:issuerDid/:hash', 
     validatorHandler(getVcSchema, 'params'),
     validatorHandler(revokeVcSchema, 'body'),
     async (req, res, next) => {
         try{
-            const { issuerDid, hash } = req.params;
+            const { issuerId, issuerDid, hash } = req.params;
             const { revocationReason } = req.body;
-            const updatedUser = await vcService.revoke(issuerDid, hash, revocationReason);
+            const revokedVc = await vcService.revoke(parseInt(issuerId), issuerDid, hash, revocationReason);
             res.json({
-                message: 'Updated',
-                data: updatedUser
+                message: 'Revoked',
+                data: revokedVc
             });
         } catch (err) {
             next(err);

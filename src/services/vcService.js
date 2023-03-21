@@ -2,59 +2,77 @@ import boom from "@hapi/boom";
 // import { DID, DIDRecoverable, Resolver } from '@lacchain/did'
 import * as issuerModel from "../libs/database/models/issuer.js";
 import * as vcModel from "../libs/database/models/vc.js";
-import { decrypt } from "../config/index.js";
+import * as configModel from "../libs/database/models/config.js";
+import config, { decrypt } from "../config/index.js";
+import fetch from "node-fetch";
 
 class VcService {
-  async signCredential(credential, privateKey) {
-    //TODO: sign credential
-    const credentialToSign = {
-      ...credential,
-      issuer: {
-        id: credential.issuer.id,
-        name: credential.issuer.name,
-      },
-    };
-    const proof = {
-      type: "EcdsaSecp256k1Signature2019",
-      created: new Date().toISOString(),
-      proofPurpose: "assertionMethod",
-      verificationMethod: "TODO",
-    };
-    const signedCredential = {
-      ...credentialToSign,
-      proof,
-    };
-    return signedCredential;
+  async issueCredential(credential, issuer, distribute, blockchain) {
+    switch (blockchain) {
+      case "lacchain":
+        const claimsVerifierAddress = await configModel.getOne("lacchain", "claimsVerifierAddress");
+        const response = await fetch(`${config.ssiApiUrl}/vc/issue`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            claimsVerifier: claimsVerifierAddress.Item.value,
+            credential: credential,
+            issuer: issuer.controller.publicKey,
+            privateKey: issuer.controller.privateKey,
+            distribute: distribute,
+          }),
+        }).then((res) => res.json()).catch((err) => {
+          console.log(err);
+        });
+      
+        return response;
+      default:
+        throw boom.badRequest("Blockchain not supported");
+    }
   }
-  async issueCredential(credential, issuer) {
-    const signedCredential = await this.signCredential(credential, issuer.privateKey);
-    const timestamp = new Date().getTime();
-    const hash = "TODO:" + timestamp.toLocaleString();
-    const status = "issued";
-    //TODO: lacnet issue credential
-    return {signedCredential, hash, status};
-  }
-  async revokeCredential(credential, hash, revocationReason) {
-    //TODO: lacnet revoke credential
-    const status = "revoked";
-    return { credential, status };
+  async revokeCredential( hash, blockchain) {
+    switch (blockchain) {
+      case "lacchain":
+        const registryAddress = await configModel.getOne("lacchain", "registryAddress");
+        const response = await fetch(`${config.ssiApiUrl}/vc/revoke/${registryAddress.Item.value}/${hash}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }).then((res) => res.json()).catch((err) => {
+          console.log(err);
+        });
+        console.log(response)
+        const status = "revoked";
+        return response;
+      default:
+        throw boom.badRequest("Blockchain not supported");
+    }
   }
 
 
-  async create(issuerId, issuerDid, credential) {
+  async create(issuerId, issuerDid, credential, distribute) {
     const issuer = (await issuerModel.getOne(issuerId, issuerDid)).Item;
     if (!issuer) throw boom.notFound("Issuer not found");
-    issuer.privateKey = decrypt(issuer.privateKey);
-    const {signedCredential, hash, status} = await this.issueCredential(credential, issuer);
+    issuer.controller.privateKey = decrypt(issuer.controller.privateKey);
+
+    const response = await this.issueCredential(credential, issuer, distribute, issuer.blockchain);
+
+    const { credential : {credentialHash, vc} } = response;
+    if (!vc) throw boom.serverUnavailable("Error issuing credential");
     const newCredential = {
       issuerDid: issuerDid,
-      hash: hash,
-      credential: signedCredential,
-      status: status,
+      hash: credentialHash || "HASHERROR:" + new Date().getTime(),
+      credential: vc,
+      status: "issued",
+      distribute: distribute,
     };
+    console.log("newCredential", newCredential)
     await vcModel.put({
       ...newCredential,
-      credential: JSON.stringify(signedCredential),
+      credential: JSON.stringify(vc),
     });
     return newCredential;
   }
@@ -70,29 +88,38 @@ class VcService {
     return credentials;
   }
 
-  async findOne(issuerDid, hash) {
+  async findOne(issuerId, issuerDid, hash) {
+    const issuer = (await issuerModel.getOne(issuerId, issuerDid)).Item;
+    if (!issuer) throw boom.notFound("Issuer not found");
     const credential = (await vcModel.getOne(issuerDid, hash)).Item;
     if (!credential) throw boom.notFound("Not found");
     credential.credential = JSON.parse(credential.credential);
     return credential;
   }
 
-  async revoke(issuerDid, hash, revocationReason) {
+  async revoke(issuerId, issuerDid, hash, revocationReason) {
+    const issuer = (await issuerModel.getOne(issuerId, issuerDid)).Item;
+    console.log(issuer.blockchain)
+    if (!issuer) throw boom.notFound("Issuer not found");
     const credential = (await vcModel.getOne(issuerDid, hash)).Item;
     if (!credential) throw boom.notFound("Not found");
     credential.credential = JSON.parse(credential.credential);
-    const {credential: revokedCredential, status} = await this.revokeCredential(credential.credential, hash, revocationReason);
-    const upadtedCredential = {
+    const response = await this.revokeCredential(hash, issuer.blockchain);
+    if (!response.hash) throw boom.serverUnavailable("Error revoking credential");
+    const revokedCredential = {
       issuerDid: issuerDid,
       hash: hash,
-      credential: revokedCredential,
-      status: status,
+      credential: credential.credential,
+      status: "revoked",
+      revocationHash: response.hash,
+      revokedAt: response.revokedAt,
+      revocationReason: revocationReason,
     };
     await vcModel.put({
-      ...upadtedCredential,
-      credential: JSON.stringify(revokedCredential),
+      ...revokedCredential,
+      credential: JSON.stringify(credential.credential),
     });
-    return upadtedCredential;
+    return revokedCredential;
   }
 }
 

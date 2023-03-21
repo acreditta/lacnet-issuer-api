@@ -15,8 +15,10 @@ const config = {
     awsRegion : process.env.AWS_REGION || 'us-east-1',
     tablesPrefix : process.env.TABLES_PREFIX || '',
     nodeAddress : process.env.NODE_ADDRESS || '',
+    nodeExpiration: process.env.NODE_EXPIRATION || 1735603200000,
     registryAddress : process.env.REGISTRY_ADDRESS || '',
     rpcUrl : process.env.RPC_URL || '',
+	ssiApiUrl : process.env.SSI_API_URL || '',
 }
 
 const algorithm = process.env.CRYPTO_ALGORITHM || 'aes-192-cbc'

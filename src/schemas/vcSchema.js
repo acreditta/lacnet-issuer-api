@@ -1,4 +1,5 @@
 import Joi from 'joi';
+import { blockchainOptions } from './issuerSchema.js';
 
 const issuerInternalId = Joi.number().integer().min(1);
 const issuerDid = Joi.string();
@@ -12,10 +13,14 @@ const expirationDate = Joi.string().isoDate();
 const credentialSubject = Joi.object({
     id: Joi.string().required(),
 }).unknown(true);
+const distribute = Joi.boolean().default(false);
+
 
 export const createVcSchema = Joi.object({
     issuerId: issuerInternalId.required(),
     issuerDid: issuerDid.required(),
+    distribute: Joi.boolean().default(false),
+    distribute: distribute,
     credential: Joi.object({
         "@context": context.required(),
         id: id.required(),
@@ -28,6 +33,7 @@ export const createVcSchema = Joi.object({
 });
 
 export const getVcSchema = Joi.object({
+    issuerId: issuerInternalId.required(),
     issuerDid: issuerDid.required(),
     hash: Joi.string().required()
 });

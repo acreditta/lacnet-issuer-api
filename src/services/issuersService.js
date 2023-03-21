@@ -1,21 +1,66 @@
 import boom from "@hapi/boom";
-import { DID, DIDRecoverable, Resolver } from '@lacchain/did'
 import * as issuerModel from "../libs/database/models/issuer.js";
+import * as configModel from "../libs/database/models/config.js";
 import { encrypt } from "../config/index.js";
 import config from "../config/index.js";
+import fetch from "node-fetch";
+import { DID } from '@lacchain/did'
 
 class IssuersService {
   async createDID(blockchain) {
     switch (blockchain) {
       case "lacchain":
+        /* Trying to isolate lacchain methods on ssi-api */
+        // const {did, verification} = await fetch(`${config.ssiApiUrl}/registry/did/create`, {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //   },
+        // }).then((res) => res.json());
+
+        /* Trying to use custom node */
         const did = new DID( {
           registry: config.registryAddress,
           rpcUrl: config.rpcUrl,
           nodeAddress: config.nodeAddress,
           network: 'testnet',
-
         } );
-        const controller = await did.getController();
+
+        /* Lacnet docs data */
+        // const did = new DID( {
+        //   registry: '0xbDa1238272FDA6888556449Cb77A87Fc8205E8ba',
+        //   rpcUrl: 'https://writer.lacchain.net',
+        //   network: 'main'
+        // } );
+        try{
+          const verif = await did.addVerificationMethod({
+            type: 'vm',
+            algorithm: 'esecp256k1rm',
+            encoding: 'hex',
+            publicKey: did.address,
+            controller: did.address,
+            expiration: 31536000 // default: 31536000
+          });
+        } catch (err) {
+          console.log(err);
+        }
+
+        //add issuer to registry
+        const registryAddress = await configModel.getOne("lacchain", "registryAddress");
+        const claimsVerifierAddress = await configModel.getOne("lacchain", "claimsVerifierAddress");
+        console.log(claimsVerifierAddress.Item.value)
+        const addIssuerHash = await fetch(`${config.ssiApiUrl}/registry/verifier/${claimsVerifierAddress.Item.value}/issuer`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            issuer: did.address,
+            registry: registryAddress.Item.value
+          })
+        }).then((res) => res.json());
+        console.log("Issuer added to registry at: ", addIssuerHash);
+        console.log("did: ", did);
         return did;
       default:
         throw boom.badRequest("Blockchain not supported");
@@ -48,11 +93,11 @@ class IssuersService {
     };
     if(!canCustomDid) {
       did = await this.createDID(issuer.blockchain);
+
       newIssuer.did = did.id;
       newIssuer.controller.publicKey = did.address;
       newIssuer.controller.privateKey = encrypt(did.registry.conf.controllerPrivateKey);
       newIssuer.didJsonCrypted = encrypt(JSON.stringify(did));
-      console.log(await did.getDocument());
       newIssuer.didDocumentCrypted = encrypt(JSON.stringify(await did.getDocument()));
     } else {
       newIssuer.did = issuer.did;
