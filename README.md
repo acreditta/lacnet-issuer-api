@@ -25,4 +25,4 @@ lacchain:deploy
 
 Now the app is ready to be deployed manually, or using docker by running docker-compose up (run docker-compose build if you had a previous image). Using docker you will get the app running on nginx using port 80.
 
-The documentation over the endpoints can be found here: <a href="https://identity.getpostman.com/handover/multifactor?user=7298513&handover_token=8fdebb14-0c2f-4d18-9522-0c353213c178">https://identity.getpostman.com/handover/multifactor?user=7298513&handover_token=8fdebb14-0c2f-4d18-9522-0c353213c178</a>
+The documentation over the endpoints can be found here: <a href="https://documenter.getpostman.com/view/7298513/2s93RKzwAG">https://documenter.getpostman.com/view/7298513/2s93RKzwAG</a>
