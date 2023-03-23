@@ -7,6 +7,11 @@ const routerApi = (app) => {
     app.use('/api/v1', router);
     router.use('/issuers', issuersRouter);
     router.use('/vc', vcRouter);
+    app.get('/healthy', (req, res) => {
+        res.status(200).json({
+            message: 'Healthy'
+        });
+    });
 }
 
 export default routerApi;

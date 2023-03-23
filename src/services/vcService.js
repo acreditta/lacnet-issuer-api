@@ -59,7 +59,7 @@ class VcService {
     issuer.controller.privateKey = decrypt(issuer.controller.privateKey);
 
     const response = await this.issueCredential(credential, issuer, distribute, issuer.blockchain);
-
+    if (!response || !response.credential) throw boom.serverUnavailable("Error issuing credential");
     const { credential : {credentialHash, vc} } = response;
     if (!vc) throw boom.serverUnavailable("Error issuing credential");
     const newCredential = {
