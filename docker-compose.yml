@@ -4,7 +4,7 @@ services:
   ssi_api:
     container_name: ssi_api
     restart: always
-    build: ./ssi_api
+    build: ./lacchain_ssi_api
     ports:
       - '8080:8080'
     environment:
