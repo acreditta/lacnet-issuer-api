@@ -44,7 +44,6 @@ class VcService {
         }).then((res) => res.json()).catch((err) => {
           console.log(err);
         });
-        console.log(response)
         const status = "revoked";
         return response;
       default:
@@ -60,7 +59,7 @@ class VcService {
 
     const response = await this.issueCredential(credential, issuer, distribute, issuer.blockchain);
     if (!response || !response.credential) throw boom.serverUnavailable("Error issuing credential");
-    const { credential : {credentialHash, vc} } = response;
+    const { credential : {credentialHash, vc, tx} } = response;
     if (!vc) throw boom.serverUnavailable("Error issuing credential");
     const newCredential = {
       issuerDid: issuerDid,
@@ -68,8 +67,8 @@ class VcService {
       credential: vc,
       status: "issued",
       distribute: distribute,
+      tx: tx ? tx : "TXERROR:" + new Date().getTime(),
     };
-    console.log("newCredential", newCredential)
     await vcModel.put({
       ...newCredential,
       credential: JSON.stringify(vc),
@@ -99,7 +98,6 @@ class VcService {
 
   async revoke(issuerId, issuerDid, hash, revocationReason) {
     const issuer = (await issuerModel.getOne(issuerId, issuerDid)).Item;
-    console.log(issuer.blockchain)
     if (!issuer) throw boom.notFound("Issuer not found");
     const credential = (await vcModel.getOne(issuerDid, hash)).Item;
     if (!credential) throw boom.notFound("Not found");

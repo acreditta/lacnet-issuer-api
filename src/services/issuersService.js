@@ -10,28 +10,15 @@ class IssuersService {
   async createDID(blockchain) {
     switch (blockchain) {
       case "lacchain":
-        /* Trying to isolate lacchain methods on ssi-api */
-        // const {did, verification} = await fetch(`${config.ssiApiUrl}/registry/did/create`, {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //   },
-        // }).then((res) => res.json());
+        const registryAddress = await configModel.getOne("lacchain", "registryAddress");
+        const claimsVerifierAddress = await configModel.getOne("lacchain", "claimsVerifierAddress");
 
-        /* Trying to use custom node */
         const did = new DID( {
-          registry: config.registryAddress,
+          registry: config.registryDidAddress,
           rpcUrl: config.rpcUrl,
-          nodeAddress: config.nodeAddress,
+          // nodeAddress: config.nodeAddress,
           network: 'testnet',
         } );
-
-        /* Lacnet docs data */
-        // const did = new DID( {
-        //   registry: '0xbDa1238272FDA6888556449Cb77A87Fc8205E8ba',
-        //   rpcUrl: 'https://writer.lacchain.net',
-        //   network: 'main'
-        // } );
         try{
           const verif = await did.addVerificationMethod({
             type: 'vm',
@@ -39,16 +26,13 @@ class IssuersService {
             encoding: 'hex',
             publicKey: did.address,
             controller: did.address,
-            expiration: 31536000 // default: 31536000
+            expiration: 1736394529 // default: 1736394529
           });
         } catch (err) {
           console.log(err);
         }
 
         //add issuer to registry
-        const registryAddress = await configModel.getOne("lacchain", "registryAddress");
-        const claimsVerifierAddress = await configModel.getOne("lacchain", "claimsVerifierAddress");
-        console.log(claimsVerifierAddress.Item.value)
         const addIssuerHash = await fetch(`${config.ssiApiUrl}/registry/verifier/${claimsVerifierAddress.Item.value}/issuer`, {
           method: "PUT",
           headers: {
@@ -59,8 +43,6 @@ class IssuersService {
             registry: registryAddress.Item.value
           })
         }).then((res) => res.json());
-        console.log("Issuer added to registry at: ", addIssuerHash);
-        console.log("did: ", did);
         return did;
       default:
         throw boom.badRequest("Blockchain not supported");

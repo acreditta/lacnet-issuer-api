@@ -15,8 +15,8 @@ const config = {
     awsRegion : process.env.AWS_REGION || 'us-east-1',
     tablesPrefix : process.env.TABLES_PREFIX || '',
     nodeAddress : process.env.NODE_ADDRESS || '',
-    nodeExpiration: process.env.NODE_EXPIRATION || 1735603200000,
-    registryAddress : process.env.REGISTRY_ADDRESS || '',
+    nodeExpiration: process.env.NODE_EXPIRATION || 1736394529,
+    registryDidAddress : process.env.REGISTRY_DID_ADDRESS || '0xbDa1238272FDA6888556449Cb77A87Fc8205E8ba',
     rpcUrl : process.env.RPC_URL || '',
 	ssiApiUrl : process.env.SSI_API_URL || '',
 }
