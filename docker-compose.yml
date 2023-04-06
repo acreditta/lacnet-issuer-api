@@ -1,11 +1,28 @@
 version: "0.1.0"
 
 services:
-  app:
+  ssi_api:
+    container_name: ssi_api
+    restart: always
+    build: ./ssi_api
+    ports:
+      - '8080:8080'
+    environment:
+      ACCOUNT_ADDRESS: "0x1b06d1a0c45c85f951d2d4bb3e6617f0d9472529"
+      ACCOUNT_PRIVATE_ENCRYPTION_KEY: "07c7976c13f9452931cf81240267a372ef10ade904595b6085809c550ff78bfe"
+      ACCOUNT_PRIVATE_KEY: "07c7976c13f9452931cf81240267a372ef10ade904595b6085809c550ff78bfe"
+      ACCOUNT_PUBLIC_ENCRYPTION_KEY: "0x1b06d1a0c45c85f951d2d4bb3e6617f0d9472529"
+  acreditta_api:
     build: .
     restart: on-failure
     ports:
       - "3000:3000"
+    depends_on:
+      - ssi_api
+    environment: 
+      SSI_API_URL: "http://ssi_api:8080"
+    links:
+      - ssi_api
   nginx:
     build: ./nginx
     restart: on-failure
@@ -14,4 +31,6 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      - app
+      - acreditta_api
+    links:
+      - acreditta_api
