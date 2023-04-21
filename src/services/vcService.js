@@ -32,15 +32,21 @@ class VcService {
         throw boom.badRequest("Blockchain not supported");
     }
   }
-  async revokeCredential( hash, blockchain) {
-    switch (blockchain) {
+  async revokeCredential( hash, issuer) {
+    switch (issuer.blockchain) {
       case "lacchain":
         const registryAddress = await configModel.getOne("lacchain", "registryAddress");
-        const response = await fetch(`${config.ssiApiUrl}/vc/revoke/${registryAddress.Item.value}/${hash}`, {
-          method: "DELETE",
+        const response = await fetch(`${config.ssiApiUrl}/vc/revoke`, {
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({
+            hash: hash,
+            registryAddress: registryAddress.Item.value,
+            issuer: issuer.controller.publicKey,
+            privateKey: issuer.controller.privateKey,
+          }),
         }).then((res) => res.json()).catch((err) => {
           console.log(err);
         });
@@ -98,11 +104,12 @@ class VcService {
 
   async revoke(issuerId, issuerDid, hash, revocationReason) {
     const issuer = (await issuerModel.getOne(issuerId, issuerDid)).Item;
+    issuer.controller.privateKey = decrypt(issuer.controller.privateKey);
     if (!issuer) throw boom.notFound("Issuer not found");
     const credential = (await vcModel.getOne(issuerDid, hash)).Item;
     if (!credential) throw boom.notFound("Not found");
     credential.credential = JSON.parse(credential.credential);
-    const response = await this.revokeCredential(hash, issuer.blockchain);
+    const response = await this.revokeCredential(hash, issuer);
     if (!response.hash) throw boom.serverUnavailable("Error revoking credential");
     const revokedCredential = {
       issuerDid: issuerDid,
