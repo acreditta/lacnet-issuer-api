@@ -1,5 +1,6 @@
 import issuersRouter from "./issuersRouter.js";
 import vcRouter from "./vcRouter.js";
+import didRouter from "./didRouter.js";
 import express from "express";
 import config from "../config/index.js";
 import fetch from "node-fetch";
@@ -9,6 +10,7 @@ const routerApi = (app) => {
     app.use('/api/v1', router);
     router.use('/issuers', issuersRouter);
     router.use('/vc', vcRouter);
+    router.use('/did', didRouter);
     app.get('/healthy', (req, res) => {
         res.status(200).json({
             message: 'Healthy'
