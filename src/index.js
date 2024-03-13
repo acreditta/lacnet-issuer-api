@@ -4,6 +4,8 @@ import { errorHandler, boomErrorHandler } from './middlewares/errorHandler.js';
 import helmet from 'helmet';
 import cors from 'cors';
 import config from './config/index.js';
+import dotenv from 'dotenv'
+dotenv.config()
 
 const app = express();
 const port = config.port;

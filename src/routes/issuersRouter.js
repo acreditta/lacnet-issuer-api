@@ -43,7 +43,11 @@ router.post('/',
                 data: newIssuer
             });
         } catch (err) {
-            next(err);
+            console.log(err);
+            res.status(500).json({
+                message: 'Failed',
+                data: err
+            });
         }
     }
 );

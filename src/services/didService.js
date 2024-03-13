@@ -14,10 +14,11 @@ class DidService {
         const did = new DID( {
           registry: config.registryDidAddress,
           rpcUrl: config.rpcUrl,
-          // nodeAddress: config.nodeAddress,
-          network: 'testnet',
+          nodeAddress: config.nodeAddress,
+          expiration: 1736394529,
+          network: 'main',
         } );
-        try{
+       try{
           const verif = await did.addVerificationMethod({
             type: 'vm',
             algorithm: 'esecp256k1rm',
@@ -30,17 +31,6 @@ class DidService {
           console.log(err);
         }
 
-        //add issuer to registry
-        const addIssuerHash = await fetch(`${config.ssiApiUrl}/registry/verifier/${claimsVerifierAddress.Item.value}/issuer`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            issuer: did.address,
-            registry: registryAddress.Item.value
-          })
-        }).then((res) => res.json());
         return did;
       default:
         throw boom.badRequest("Blockchain not supported");

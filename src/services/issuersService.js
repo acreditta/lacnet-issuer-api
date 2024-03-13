@@ -16,11 +16,12 @@ class IssuersService {
         const did = new DID( {
           registry: config.registryDidAddress,
           rpcUrl: config.rpcUrl,
-          // nodeAddress: config.nodeAddress,
-          network: 'testnet',
+          nodeAddress: config.nodeAddress,
+          expiration: 1736394529,
+          network: 'main',
         } );
         try{
-          const verif = await did.addVerificationMethod({
+          await did.addVerificationMethod({
             type: 'vm',
             algorithm: 'esecp256k1rm',
             encoding: 'hex',
@@ -32,16 +33,17 @@ class IssuersService {
           console.log(err);
         }
 
+        const bodyJson = JSON.stringify({
+          issuer: did.address,
+          registry: registryAddress.Item.value
+        });
         //add issuer to registry
         const addIssuerHash = await fetch(`${config.ssiApiUrl}/registry/verifier/${claimsVerifierAddress.Item.value}/issuer`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            issuer: did.address,
-            registry: registryAddress.Item.value
-          })
+          body: bodyJson
         }).then((res) => res.json());
         return did;
       default:
@@ -74,13 +76,16 @@ class IssuersService {
       }
     };
     if(!canCustomDid) {
+      console.log("Start");
       did = await this.createDID(issuer.blockchain);
-
+      console.log("Process");
       newIssuer.did = did.id;
       newIssuer.controller.publicKey = did.address;
+      console.log("did");
       newIssuer.controller.privateKey = encrypt(did.registry.conf.controllerPrivateKey);
       newIssuer.didJsonCrypted = encrypt(JSON.stringify(did));
       newIssuer.didDocumentCrypted = encrypt(JSON.stringify(await did.getDocument()));
+      console.log("encrypot");
     } else {
       newIssuer.did = issuer.did;
       newIssuer.controller.publicKey = issuer.publicKey;

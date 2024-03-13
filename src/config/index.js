@@ -1,4 +1,6 @@
 import crypto from 'crypto';
+import dotenv from 'dotenv'
+dotenv.config()
 
 const config = {
     env : process.env.NODE_ENV || 'development',
@@ -13,7 +15,7 @@ const config = {
     tablesPrefix : process.env.TABLES_PREFIX || '',
     nodeAddress : process.env.NODE_ADDRESS || '',
     nodeExpiration: process.env.NODE_EXPIRATION || 1736394529,
-    registryDidAddress : process.env.REGISTRY_DID_ADDRESS || '0xbDa1238272FDA6888556449Cb77A87Fc8205E8ba',
+    registryDidAddress : process.env.REGISTRY_DID_ADDRESS || '0x81a7f01A18EE444F57551e1fa2f0C12116f318Fb',
     rpcUrl : process.env.RPC_URL || '',
 	ssiApiUrl : process.env.SSI_API_URL || '',
 }
